@@ -1,20 +1,9 @@
 import json
-import os
+import math
+import urllib.request
+import urllib.error
 
-import requests
-
-# Service : luas-tabung
-# Pemilik : TODO (isi nama)
-# Request : {"jari_jari": 7, "tinggi": 10}
-# Response: {"luas_selimut": 439.82}
-# Rumus   : L = 2 * pi * r * t
-#
-# Service ini harus MEMANGGIL luas-persegi dan luas-lingkaran dan memakai hasilnya.
-# Aturan pemakaian hasilnya BELUM DISEPAKATI (lihat bagian "Pertanyaan terbuka" di README).
-
-GATEWAY = os.environ.get("GATEWAY_URL", "http://gateway.openfaas:8080")
-PERSEGI_URL = f"{GATEWAY}/function/luas-persegi"
-LINGKARAN_URL = f"{GATEWAY}/function/luas-lingkaran"
+GATEWAY = "http://gateway:8080/function"
 
 
 def _respond(status, payload):
@@ -25,9 +14,53 @@ def _respond(status, payload):
     }
 
 
+def call_service(name, payload):
+    request = urllib.request.Request(
+        f"{GATEWAY}/{name}",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return json.loads(response.read().decode())
+
+
 def handle(event, context):
-    # TODO:
-    # 1. baca "jari_jari" dan "tinggi" dari event.body dan validasi
-    # 2. panggil PERSEGI_URL dan LINGKARAN_URL sesuai aturan yang disepakati
-    # 3. kembalikan {"luas_selimut": ...}
-    return _respond(501, {"error": "luas-tabung belum diimplementasi"})
+    try:
+        data = json.loads(event.body or "{}")
+        jari_jari = float(data["jari_jari"])
+        tinggi = float(data["tinggi"])
+
+        if jari_jari <= 0 or tinggi <= 0:
+            return _respond(
+                400,
+                {"error": "Jari-jari dan tinggi harus lebih dari 0"}
+            )
+
+        # Memanggil microservice luas-lingkaran
+        circle = call_service(
+            "luas-lingkaran",
+            {"jari_jari": jari_jari}
+        )
+        luas_lingkaran = float(circle["luas"])
+
+        # Menghitung keliling lingkaran
+        keliling = 2 * math.pi * jari_jari
+
+        # Memanggil microservice luas-persegi untuk menghitung luas persegi panjang
+        rectangle = call_service(
+            "luas-persegi",
+            {"panjang": keliling, "lebar": tinggi}
+        )
+
+        luas_selimut = round(float(rectangle["luas"]), 2)
+
+        return _respond(200, {"luas_selimut": luas_selimut})
+
+    except urllib.error.URLError:
+        return _respond(
+            502,
+            {"error": "Gagal menghubungi microservice lain"}
+        )
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+        return _respond(400, {"error": "Input tidak valid"})

@@ -1,27 +1,25 @@
 version: 1.0
 provider:
   name: openfaas
-  # Ganti dengan IP EC2 faasd (atau pakai: faas-cli deploy --gateway http://<IP-FAASD>:8080)
-  gateway: http://<IP-FAASD>:8080
+  gateway: http://127.0.0.1:8080
 
 functions:
   luas-persegi:
     lang: python3-http
     handler: ./luas-persegi
-    # Ganti <REGISTRY-USER> dengan username Docker Hub/GHCR yang dipakai kelompok
-    image: <REGISTRY-USER>/luas-persegi:latest
+    image: ghcr.io/kendelline/luas-persegi:latest
 
   luas-kubus:
     lang: python3-http
     handler: ./luas-kubus
-    image: <REGISTRY-USER>/luas-kubus:latest
+    image: ghcr.io/kendelline/luas-kubus:latest
 
   luas-lingkaran:
     lang: python3-http
     handler: ./luas-lingkaran
-    image: <REGISTRY-USER>/luas-lingkaran:latest
+    image: ghcr.io/kendelline/luas-lingkaran:latest
 
   luas-tabung:
     lang: python3-http
     handler: ./luas-tabung
-    image: <REGISTRY-USER>/luas-tabung:latest
+    image: ghcr.io/kendelline/luas-tabung:latest

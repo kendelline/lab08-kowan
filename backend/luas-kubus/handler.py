@@ -1,18 +1,8 @@
 import json
-import os
+import urllib.request
+import urllib.error
 
-import requests
-
-# Service : luas-kubus
-# Pemilik : TODO (isi nama)
-# Request : {"sisi": 5}
-# Response: {"luas_permukaan": 150}
-# Rumus   : L = 6 * L_persegi  (L_persegi didapat dengan MEMANGGIL service luas-persegi)
-
-# Dari dalam faasd, function saling memanggil lewat gateway internal.
-GATEWAY = os.environ.get("GATEWAY_URL", "http://gateway.openfaas:8080")
-PERSEGI_URL = f"{GATEWAY}/function/luas-persegi"
-
+GATEWAY = "http://gateway:8080/function"
 
 def _respond(status, payload):
     return {
@@ -21,10 +11,34 @@ def _respond(status, payload):
         "body": json.dumps(payload),
     }
 
+def call_service(name, payload):
+    request = urllib.request.Request(
+        f"{GATEWAY}/{name}",
+        data=json.dumps(payload).encode(),
+        headers={"Content-Type": "application/json"},
+        method="POST"
+    )
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return json.loads(response.read().decode())
 
 def handle(event, context):
-    # TODO:
-    # 1. baca "sisi" dari event.body dan validasi
-    # 2. requests.post(PERSEGI_URL, json={"sisi": sisi}) -> ambil "luas"
-    # 3. kembalikan {"luas_permukaan": 6 * luas}
-    return _respond(501, {"error": "luas-kubus belum diimplementasi"})
+    try:
+        data = json.loads(event.body or "{}")
+        sisi = float(data["sisi"])
+
+        if sisi <= 0:
+            return _respond(400, {"error": "Sisi harus lebih dari 0"})
+
+        result = call_service("luas-persegi", {"sisi": sisi})
+        luas_satu_sisi = float(result["luas"])
+        luas_permukaan = luas_satu_sisi * 6
+
+        if luas_permukaan.is_integer():
+            luas_permukaan = int(luas_permukaan)
+
+        return _respond(200, {"luas_permukaan": luas_permukaan})
+
+    except urllib.error.URLError:
+        return _respond(502, {"error": "Gagal menghubungi luas-persegi"})
+    except (ValueError, KeyError, TypeError, json.JSONDecodeError):
+        return _respond(400, {"error": "Input tidak valid"})
