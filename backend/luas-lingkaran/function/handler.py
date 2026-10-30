@@ -16,7 +16,8 @@ def handle(event, context):
         if jari_jari <= 0:
             return _respond(400, {"error": "Jari-jari harus lebih dari 0"})
 
-        luas = round(math.pi * jari_jari ** 2, 2)
+        luas = round(math.pi * jari_jari ** 2, 6)
+
         return _respond(200, {"luas": luas})
 
     except (ValueError, KeyError, TypeError, json.JSONDecodeError):

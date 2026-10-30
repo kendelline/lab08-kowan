@@ -1,10 +1,8 @@
 import json
-import math
 import urllib.request
 import urllib.error
 
 GATEWAY = "http://gateway:8080/function"
-
 
 def _respond(status, payload):
     return {
@@ -12,7 +10,6 @@ def _respond(status, payload):
         "headers": {"Content-Type": "application/json"},
         "body": json.dumps(payload),
     }
-
 
 def call_service(name, payload):
     request = urllib.request.Request(
@@ -44,8 +41,8 @@ def handle(event, context):
         )
         luas_lingkaran = float(circle["luas"])
 
-        # Menghitung keliling lingkaran
-        keliling = 2 * math.pi * jari_jari
+        # Keliling alas diturunkan dari hasil luas lingkaran: 2 * (pi * r^2) / r
+        keliling = 2 * luas_lingkaran / jari_jari
 
         # Memanggil microservice luas-persegi untuk menghitung luas persegi panjang
         rectangle = call_service(
