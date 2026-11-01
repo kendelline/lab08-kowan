@@ -136,6 +136,8 @@ curl -i -X POST http://127.0.0.1:8080/function/luas-persegi \
 
 ### Frontend (EC2 Dokku)
 
+[Geometry Calculator](http://geometry-calculator.52.21.107.62.sslip.io)
+
 Deployment frontend memakai **Dockerfile + Nginx**. Container menyajikan HTML, CSS, dan JavaScript sekaligus meneruskan request API ke faasd. `server.py` hanya digunakan untuk mencoba aplikasi secara lokal; tidak disalin ke image deployment.
 
 Frontend menampilkan empat kalkulator, visualisasi SVG yang mengikuti dimensi, satuan panjang (cm, m, mm), serta rumus dasar dan alur pemanggilan microservices. Luas akhir selalu dibaca dari respons backend, termasuk pembulatan lingkaran dan tabung.
