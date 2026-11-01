@@ -1,14 +1,219 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kalkulator Geometri</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <h1>Kalkulator Geometri</h1>
-  <!-- TODO (Orang 3): 4 menu kalkulator: persegi, kubus, lingkaran, tabung -->
-  <script src="script.js"></script>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Eksplorasi luas persegi, kubus, lingkaran, dan selimut tabung dengan visualisasi interaktif dan alur microservices."
+    />
+    <meta name="theme-color" content="#6554c0" />
+    <title>Geometry Calculator</title>
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="style.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#calculator">Langsung ke kalkulator</a>
+    <div class="shell">
+      <main>
+        <h1 class="page-title">Geometry <span>Calculator</span></h1>
+
+        <section id="workspace" aria-labelledby="workspace-title">
+          <div class="section-heading">
+            <h2 id="workspace-title">
+              <span class="step-number">01</span> Pilih bangun
+            </h2>
+          </div>
+          <div
+            class="shape-options"
+            role="group"
+            aria-label="Pilih bangun geometri"
+          >
+            <button
+              class="shape-option is-active"
+              type="button"
+              data-shape="persegi"
+              aria-pressed="true"
+              aria-controls="calculation-workspace"
+            >
+              <span class="shape-icon" aria-hidden="true"
+                ><svg viewBox="0 0 40 40">
+                  <rect x="8" y="8" width="24" height="24" rx="2" />
+                  <path d="M8 26h6v6" /></svg
+              ></span>
+              <span
+                ><strong>Persegi</strong><small>Luas bangun datar</small></span
+              >
+              <span class="selection-dot" aria-hidden="true"></span>
+            </button>
+            <button
+              class="shape-option"
+              type="button"
+              data-shape="kubus"
+              aria-pressed="false"
+              aria-controls="calculation-workspace"
+            >
+              <span class="shape-icon" aria-hidden="true"
+                ><svg viewBox="0 0 40 40">
+                  <path d="m20 5 14 8v15l-14 8-14-8V13Z" />
+                  <path d="m6 13 14 8 14-8M20 21v15" /></svg
+              ></span>
+              <span><strong>Kubus</strong><small>Luas permukaan</small></span>
+              <span class="selection-dot" aria-hidden="true"></span>
+            </button>
+            <button
+              class="shape-option"
+              type="button"
+              data-shape="lingkaran"
+              aria-pressed="false"
+              aria-controls="calculation-workspace"
+            >
+              <span class="shape-icon" aria-hidden="true"
+                ><svg viewBox="0 0 40 40">
+                  <circle cx="20" cy="20" r="14" />
+                  <path d="M20 20h14" />
+                  <circle class="icon-point" cx="20" cy="20" r="1.5" /></svg
+              ></span>
+              <span
+                ><strong>Lingkaran</strong
+                ><small>Luas bangun datar</small></span
+              >
+              <span class="selection-dot" aria-hidden="true"></span>
+            </button>
+            <button
+              class="shape-option"
+              type="button"
+              data-shape="tabung"
+              aria-pressed="false"
+              aria-controls="calculation-workspace"
+            >
+              <span class="shape-icon" aria-hidden="true"
+                ><svg viewBox="0 0 40 40">
+                  <ellipse cx="20" cy="10" rx="12" ry="5" />
+                  <path d="M8 10v20c0 7 24 7 24 0V10M8 29c0-7 24-7 24 0" /></svg
+              ></span>
+              <span><strong>Tabung</strong><small>Luas selimut</small></span>
+              <span class="selection-dot" aria-hidden="true"></span>
+            </button>
+          </div>
+
+          <div class="calculation-workspace" id="calculation-workspace">
+            <section
+              class="input-panel panel"
+              aria-labelledby="dimension-title"
+            >
+              <div class="panel-heading">
+                <h2 id="dimension-title">
+                  <span class="step-number">02</span> Atur dimensi
+                </h2>
+              </div>
+              <h3 id="shape-title">Luas persegi</h3>
+              <form id="calculator" novalidate>
+                <div class="unit-field">
+                  <label for="measurement-unit">Satuan panjang</label>
+                  <select id="measurement-unit" name="unit">
+                    <option value="cm">Sentimeter (cm)</option>
+                    <option value="m">Meter (m)</option>
+                    <option value="mm">Milimeter (mm)</option>
+                  </select>
+                </div>
+                <div id="fields" class="dimension-fields"></div>
+                <p class="input-hint">
+                  Gunakan nilai lebih dari 0. Angka desimal juga boleh.
+                </p>
+                <button id="calculate" class="primary-button" type="submit">
+                  <span id="calculate-label">Hitung luas</span
+                  ><span class="button-arrow" aria-hidden="true">↗</span>
+                </button>
+                <p
+                  id="feedback"
+                  class="feedback"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                ></p>
+              </form>
+            </section>
+
+            <section class="visual-panel panel" aria-labelledby="visual-title">
+              <div class="panel-heading">
+                <h2 id="visual-title">Visualisasi bangun</h2>
+                <span id="dimension-badge" class="dimension-badge"
+                  >BANGUN 2D</span
+                >
+              </div>
+              <figure class="geometry-figure">
+                <div id="visualization" class="visualization"></div>
+                <figcaption>
+                  <span class="legend-swatch" aria-hidden="true"></span
+                  ><span id="visual-caption"
+                    >Area berwarna menunjukkan luas persegi.</span
+                  >
+                </figcaption>
+              </figure>
+              <div class="formula-strip">
+                <span>RUMUS DASAR</span><strong id="formula">L = s × s</strong
+                ><span id="visual-scale">Ilustrasi proporsional</span>
+              </div>
+            </section>
+          </div>
+
+          <section
+            class="result-panel panel"
+            aria-labelledby="result-title"
+            aria-busy="false"
+          >
+            <div class="result-summary" aria-live="polite" aria-atomic="true">
+              <div class="result-heading">
+                <h2 id="result-title">Hasil perhitungan</h2>
+                <span id="result-status" class="result-status" data-state="idle"
+                  >Belum dihitung</span
+                >
+              </div>
+              <div class="result-amount">
+                <output id="result" for="sisi">—</output
+                ><span id="result-unit">cm²</span>
+              </div>
+            </div>
+            <div class="service-panel">
+              <h3 id="service-title">
+                <span class="step-number">03</span> Alur microservices
+              </h3>
+              <ol
+                id="service-flow"
+                class="service-flow"
+                aria-label="Jalur request"
+              ></ol>
+              <ol
+                id="service-calls"
+                class="service-calls"
+                aria-label="Urutan panggilan antarservice"
+                hidden
+              ></ol>
+              <p class="service-return">Respons JSON → Frontend</p>
+              <code id="endpoint" class="service-endpoint"
+                >POST /api/luas-persegi</code
+              >
+            </div>
+          </section>
+        </section>
+
+        <section class="credits" aria-labelledby="credits-title">
+          <h2 id="credits-title">Dibuat oleh</h2>
+          <ol>
+            <li>Agus Tini Sridewi (2306276004)</li>
+            <li>Joanne Kenisa Adelina Limena (2306275626)</li>
+            <li>Muhammad Almerazka Yocendra (2306241745)</li>
+          </ol>
+        </section>
+      </main>
+    </div>
+    <noscript
+      ><p class="noscript-message">
+        Aktifkan JavaScript untuk menggunakan kalkulator dan visualisasi
+        geometri.
+      </p></noscript
+    >
+  </body>
 </html>

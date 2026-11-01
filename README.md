@@ -7,7 +7,7 @@ Kalkulator geometri berbasis **microservices**. Empat service dijalankan dengan 
 | Backend | Python + faasd | 4 microservices perhitungan |
 | Infrastruktur | AWS EC2 | Server backend dan frontend |
 | Frontend | HTML, CSS, JavaScript | Tampilan kalkulator (4 menu) |
-| Deployment frontend | Dokku | Hosting aplikasi frontend |
+| Deployment frontend | Dokku + Dockerfile Nginx | Hosting frontend dan proxy API faasd |
 | CI | GitHub Actions + GHCR | Build dan push image tiap service |
 
 ## Arsitektur
@@ -51,7 +51,7 @@ lab08-kowan/
 │   ├── luas-kubus/
 │   ├── luas-lingkaran/
 │   └── luas-tabung/
-└── frontend/                # index.html, style.css, script.js, Procfile
+└── frontend/                # UI, Dockerfile, nginx.conf, server.py (lokal)
 ```
 
 > Image tiap service dibuild oleh GitHub Actions (`build-images.yml`) memakai `Dockerfile` di foldernya, lalu di-push ke `ghcr.io/kendelline/<service>:latest`. Kode function ada di `function/handler.py`.
@@ -132,10 +132,15 @@ Cek hasilnya:
 curl -i -X POST http://127.0.0.1:8080/function/luas-persegi \
   -H "Content-Type: application/json" -d '{"sisi": 5}'
 # HTTP/1.1 200 OK, header Access-Control-Allow-Origin: *, body {"luas": 25}
+```
 
 ### Frontend (EC2 Dokku)
 
-Folder `frontend/` berisi situs statis (`index.html`, `style.css`, `script.js`) beserta `Procfile`. Deploy ke app Dokku mengikuti materi praktikum. Pastikan endpoint di `script.js` sudah mengarah ke IP backend yang benar.
+Deployment frontend memakai **Dockerfile + Nginx**. Container menyajikan HTML, CSS, dan JavaScript sekaligus meneruskan request API ke faasd. `server.py` hanya digunakan untuk mencoba aplikasi secara lokal; tidak disalin ke image deployment.
+
+Frontend menampilkan empat kalkulator, visualisasi SVG yang mengikuti dimensi, satuan panjang (cm, m, mm), serta rumus dasar dan alur pemanggilan microservices. Luas akhir selalu dibaca dari respons backend, termasuk pembulatan lingkaran dan tabung.
+
+Browser mengirim `POST /api/<nama-service>` ke origin frontend. Server frontend meneruskan request ke `http://52.54.0.92:8080/function/<nama-service>`, sehingga frontend HTTPS tidak perlu memanggil gateway HTTP langsung dari browser.
 
 ## Catatan keamanan
 
